@@ -44,24 +44,25 @@ contract Card {
     // 誰が何枚持っているか
     mapping(address => uint) public owns;
     // [Tips]動的配列はpublicで参照できない
-    address[] private owners;
-    
+    address[] private addressList;
+
     event Debug(string);
+    event Debug_i(uint);
     
     function Card(bytes32 _name, uint _issued, address _author){
         name = _name;
         // author = msg.sender; // カードのコントラクトになってしまう
         author = _author;
         issued = _issued;
-        owners.push(author);
+        addressList.push(author);
         owns[author] = issued;
     }
     
     /**
      * ownerのアドレスの配列取得
      */
-    function getOwnerAddressList() constant returns (address[] ownerAddressList) {
-        ownerAddressList = owners;
+    function getOwnerList() constant returns (address[] ownerAddressList) {
+        ownerAddressList = addressList;
     }
     
     // 売る
@@ -69,20 +70,52 @@ contract Card {
         address from;
         uint quantity;
         uint price; // weiで指定
+        bool active;
+    }
+    SellInfo[] public sellInfos;
+    
+    // Sellデータを作成
+    function sell(uint quantity, uint price){
+        sellInfos.push(SellInfo(msg.sender, quantity, price, true));
+    }
+    
+    // SellInfosの数を変える
+    function sellInfosLength() constant returns (uint){
+        return sellInfos.length;
     }
     
     // 買う
-    function buy(address from, address to, uint quantity){
+    function buy(uint idx) payable {
+        
+        SellInfo s = sellInfos[idx];
+        Debug_i(s.quantity);
+        Debug_i(s.price);
+        Debug_i(msg.value); // wei
+
+        if(msg.value != s.quantity * s.price){
+            throw;
+        }
+
+        if(!s.active){
+            throw;
+        }
+
+        
+        address from = s.from;
+        address to = msg.sender;
+        uint quantity = s.quantity;
+        // uint price = s.price;
+        
         bool hasOwn = false;
         // 既にオーナーかどうか（もっといい方法ないかな？）
-        for(uint i; i < owners.length; i++){
-            if(owners[i] == to){
+        for(uint i; i < addressList.length; i++){
+            if(addressList[i] == to){
                hasOwn = true;
             }
         }
         if(!hasOwn){
             // 初オーナー
-            owners.push(to);
+            addressList.push(to);
             owns[from] -= quantity;
             owns[to] = quantity;
         }else{
@@ -90,6 +123,8 @@ contract Card {
             owns[from] -= quantity;
             owns[to] += quantity;
         }
+        s.active = false;
+        s.from.transfer(this.balance);
     }
    
 }
