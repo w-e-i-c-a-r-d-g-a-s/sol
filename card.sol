@@ -106,32 +106,41 @@ contract Card {
         address to = msg.sender;
         uint quantity = s.quantity;
         // uint price = s.price;
-        
-        bool hasOwn = false;
-        // 既にオーナーかどうか（もっといい方法ないかな？）
-        for(uint i; i < addressList.length; i++){
-            if(addressList[i] == to){
-               hasOwn = true;
-            }
-        }
-        if(!hasOwn){
+
+        bool alreadyOwner = isAlreadyOwner(to);
+
+        if(!alreadyOwner){
             // 初オーナー
             addressList.push(to);
-            owns[from] -= quantity;
-            owns[to] = quantity;
-        }else{
-            // 既にオーナー
-            owns[from] -= quantity;
-            owns[to] += quantity;
         }
+        owns[from] -= quantity;
+        owns[to] += quantity;
         s.active = false;
         s.from.transfer(this.balance);
     }
-    
+
+    function isAlreadyOwner(address addr) returns (bool){
+        bool isAlready = false;
+        // 既にオーナーかどうか（もっといい方法ないかな？）
+        for(uint i; i < addressList.length; i++){
+            if(addressList[i] == addr){
+                isAlready = true;
+            }
+        }
+        return isAlready;
+    }
+
     /**
      * 買い注文リスト
      */
     BuyOrder[] public buyOrders;
+
+    /**
+    *  買い注文リストの要素数を返す
+    */
+    function getBuyOrdersCount() constant returns (uint){
+        return buyOrders.length;
+    }
     
     /**
      * 買い注文作成
@@ -155,6 +164,11 @@ contract Card {
         buyOrders[idx].sell(seller, quantity);
         owns[seller] = owns[seller] - quantity;
         owns[buyer] = owns[buyer] + quantity;
+        bool alreadyOwner = isAlreadyOwner(buyer);
+        if(!alreadyOwner){
+            // 初オーナー
+            addressList.push(buyer);
+        }
     }
 }
 
