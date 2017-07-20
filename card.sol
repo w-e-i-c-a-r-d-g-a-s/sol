@@ -203,6 +203,7 @@ contract BuyOrder {
         seller.transfer(price * _quantity);
         value = value - price * _quantity;
         
+        quantity -= _quantity;
         //TODO:綺麗に割り切れない場合の救済
         if(value == 0){
             ended = true;
