@@ -76,7 +76,7 @@ contract Card {
     SellInfo[] public sellInfos;
     
     // Sellデータを作成
-    function sell(uint quantity, uint price){
+    function sellOrder(uint quantity, uint price){
         sellInfos.push(SellInfo(msg.sender, quantity, price, true));
     }
     
