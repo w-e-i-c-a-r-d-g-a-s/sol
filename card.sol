@@ -217,6 +217,7 @@ contract BuyOrder {
     function close() {
         require(msg.sender == buyer);
         buyer.transfer(value);
+        value = 0;
         ended = true;
     }
     
