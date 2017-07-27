@@ -131,6 +131,13 @@ contract Card {
         }
         return isAlready;
     }
+    
+    /**
+     * 売り注文を終了する
+     */
+    function closeSellOrder(uint idx){
+        delete sellInfos[idx];
+    }
 
     /**
      * 買い注文リスト
