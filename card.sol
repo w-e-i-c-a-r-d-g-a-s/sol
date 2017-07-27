@@ -50,6 +50,11 @@ contract Card {
     event Debug(string);
     event Debug_i(uint);
     event Debug(address c);
+    
+    /**
+     * 指定数のカードを所有しているユーザーのみ
+     */
+    modifier onlyOwn(uint16 _quantity) { require(owns[msg.sender] > _quantity); _; }
 
     function Card(bytes32 _name, uint _issued, bytes32 _imageHash, address _author){
         name = _name;
@@ -59,6 +64,21 @@ contract Card {
         imageHash = _imageHash;
         addressList.push(author);
         owns[author] = issued;
+    }
+    
+    /**
+     * カードを送る 
+     */
+    function send(address to, uint16 quantity) onlyOwn (quantity) {
+
+        address from = msg.sender;
+
+        if(!isAlreadyOwner(to)){
+            // 初オーナー
+            addressList.push(to);
+        }
+        owns[from] -= quantity;
+        owns[to] += quantity;
     }
     
     /**
