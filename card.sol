@@ -94,15 +94,12 @@ contract Card {
         Debug_i(s.quantity);
         Debug_i(s.price);
         Debug_i(msg.value); // wei
+        
+        //入力金額の正当性チェック
+        require(msg.value == s.quantity * s.price);
 
-        if(msg.value != s.quantity * s.price){
-            throw;
-        }
-
-        if(!s.active){
-            throw;
-        }
-
+        //有効チェック
+        require(s.active);
         
         address from = s.from;
         address to = msg.sender;
@@ -234,45 +231,4 @@ contract BuyOrder {
      * Fallback Function
      */
     function () payable { }
-}
-
-// 履歴
-contract History {
-    
-    address from;
-    address to;
-    address card;
-    uint32 price;
-    uint16 quantity;
-    
-    function History(
-        address _from,
-        address _to,
-        address _card,
-        uint32 _price,
-        uint16 _quantity
-    ){
-        from = _from;
-        to = _to;
-        card = _card;
-        price = _price;
-        quantity = _quantity;
-    }
-
-}
-
-contract UserMaster {
-    mapping (address => User) users;
-    function add(){
-        User u = new User();
-        users[address(u)] = u;
-    }
-}
-
-// ユーザ
-contract User {
-    address[] public ownedCard;
-    address[] public activity;
-    function User(){
-    }
 }
